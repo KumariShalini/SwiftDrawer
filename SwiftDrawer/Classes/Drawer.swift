@@ -22,8 +22,8 @@ public struct Drawer: View {
     }
     
     @discardableResult
-    public func setMain<Main: View>(view: Main) -> Drawer {
-        drawerControl.setMain(view: view,shouldEnableGesture: false)
+    public func setMain<Main: View>(view: Main,shouldEnableGesture:Bool) -> Drawer {
+        drawerControl.setMain(view: view,shouldEnableGesture: shouldEnableGesture)
         return self
     }
     
