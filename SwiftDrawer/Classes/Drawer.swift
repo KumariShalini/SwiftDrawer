@@ -22,8 +22,8 @@ public struct Drawer: View {
     }
     
     @discardableResult
-    public func setMain<Main: View>(view: Main,shouldEnableGesture:Bool) -> Drawer {
-        drawerControl.setMain(view: view,shouldEnableGesture: shouldEnableGesture)
+    public func setMain<Main: View>(view: Main) -> Drawer {
+        drawerControl.setMain(view: view,shouldEnableGesture: true)
         return self
     }
     
@@ -58,7 +58,7 @@ public struct DemoSlider: View, SliderProtocol {
 
 struct Drawer_Previews : PreviewProvider {
     static var previews: some View {
-        Drawer().setMain(view: DemoMain(), shouldEnableGesture: true)
+        Drawer().setMain(view: DemoMain())
                 .setSlider(view: DemoSlider.init(type: .leftRear))
     }
 }
