@@ -58,7 +58,7 @@ public struct DemoSlider: View, SliderProtocol {
 
 struct Drawer_Previews : PreviewProvider {
     static var previews: some View {
-        Drawer().setMain(view: DemoMain())
+        Drawer().setMain(view: DemoMain(), shouldEnableGesture: true)
                 .setSlider(view: DemoSlider.init(type: .leftRear))
     }
 }
