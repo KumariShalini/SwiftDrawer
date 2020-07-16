@@ -23,7 +23,7 @@ public struct Drawer: View {
     
     @discardableResult
     public func setMain<Main: View>(view: Main) -> Drawer {
-        drawerControl.setMain(view: view)
+        drawerControl.setMain(view: view,shouldEnableGesture: false)
         return self
     }
     

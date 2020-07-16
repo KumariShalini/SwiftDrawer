@@ -18,6 +18,7 @@ struct MainContainer<Content: View> : View {
     let main: AnyView
     private var maxMaskAlpha: CGFloat
     private var maskEnable: Bool
+    private var shouldEnableGesture: Bool
     var anyCancel: AnyCancellable?
     var body: some View {
         GeometryReader { proxy in
@@ -27,6 +28,7 @@ struct MainContainer<Content: View> : View {
     }
     
     init(content: Content,
+         shouldEnableGesture: Bool,
          maxMaskAlpha: CGFloat = 0.25,
          maskEnable: Bool = true,
          drawerControl: DrawerControl) {
@@ -37,6 +39,7 @@ struct MainContainer<Content: View> : View {
         self.drawerControl = drawerControl
         self.leftRear = drawerControl.status[.leftRear] ?? SliderStatus(type: .none)
         self.rightRear = drawerControl.status[.rightRear] ?? SliderStatus(type: .none)
+        self.shouldEnableGesture = shouldEnableGesture
     }
     
     func generateBody(proxy: GeometryProxy) -> some View {
@@ -60,35 +63,37 @@ struct MainContainer<Content: View> : View {
         }
         .offset(x: self.offset, y: 0)
         .shadow(radius: maxRadius)
-        .gesture(DragGesture().onChanged({ (value) in
-            let will = self.offset + (value.translation.width-self.gestureCurrent)
-            if self.leftRear.type != .none {
-                let range = 0...self.leftRear.sliderWidth
-                if range.contains(will) {
-                    self.leftRear.currentStatus = .moving(offset: will)
-                    self.gestureCurrent = value.translation.width
-                }
-            }
+        .ifTrue(shouldEnableGesture){
+              AnyView($0.gesture(DragGesture().onChanged({ (value) in
+                  let will = self.offset + (value.translation.width-self.gestureCurrent)
+                  if self.leftRear.type != .none {
+                      let range = 0...self.leftRear.sliderWidth
+                      if range.contains(will) {
+                          self.leftRear.currentStatus = .moving(offset: will)
+                          self.gestureCurrent = value.translation.width
+                      }
+                  }
 
-            if self.rightRear.type != .none {
-                let range = (-self.rightRear.sliderWidth)...0
-                if range.contains(will) {
-                    self.rightRear.currentStatus = .moving(offset: will)
-                    self.gestureCurrent = value.translation.width
-                }
-            }
-        }).onEnded({ (value) in
-            let will = self.offset + (value.translation.width-self.gestureCurrent)
-            if self.leftRear.type != .none {
-                let range = 0...self.leftRear.sliderWidth
-                self.leftRear.currentStatus = will-range.lowerBound > range.upperBound-will ? .show : .hide
-            }
-            if self.rightRear.type != .none {
-                let range = (-self.rightRear.sliderWidth)...0
-                self.rightRear.currentStatus = will-range.lowerBound < range.upperBound-will ? .show : .hide
-            }
-            self.gestureCurrent = 0
-        }))
+                  if self.rightRear.type != .none {
+                      let range = (-self.rightRear.sliderWidth)...0
+                      if range.contains(will) {
+                          self.rightRear.currentStatus = .moving(offset: will)
+                          self.gestureCurrent = value.translation.width
+                      }
+                  }
+              }).onEnded({ (value) in
+                  let will = self.offset + (value.translation.width-self.gestureCurrent)
+                  if self.leftRear.type != .none {
+                      let range = 0...self.leftRear.sliderWidth
+                      self.leftRear.currentStatus = will-range.lowerBound > range.upperBound-will ? .show : .hide
+                  }
+                  if self.rightRear.type != .none {
+                      let range = (-self.rightRear.sliderWidth)...0
+                      self.rightRear.currentStatus = will-range.lowerBound < range.upperBound-will ? .show : .hide
+                  }
+                  self.gestureCurrent = 0
+              })))
+        }
     }
     
     var offset: CGFloat {
@@ -124,7 +129,18 @@ struct MainContainer_Previews : PreviewProvider {
         let view = DemoSlider.init(type: .leftRear)
         let c = DrawerControl()
         c.setSlider(view: view)
-        return MainContainer.init(content: DemoMain(), drawerControl: c)
+        return MainContainer.init(content: DemoMain(), shouldEnableGesture: true, drawerControl: c)
+    }
+}
+
+public extension View {
+    func ifTrue(_ condition:Bool, apply:(AnyView) -> (AnyView)) -> AnyView {
+        if condition {
+            return apply(AnyView(self))
+        }
+        else {
+            return AnyView(self)
+        }
     }
 }
 #endif
